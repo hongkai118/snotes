@@ -1,3 +1,5 @@
+MYSQL学习笔记
+
 安装和启动
 	1. 安装MySQL
 		a. 去官网下载Community（社区）版本
@@ -18,9 +20,9 @@
 连接-创建用户
 	1. 默认：用户Root
 	2. 创建用户：
-		a. create user 'Kyle'@'192.168.1.1' identified by '123123';  #kyle可以在192.168.1.1这机器上登录
-		b. create user 'Kyle'@'192.168.1.%' identified by '123123'; #可以在192.168.1.x这些机器上登录
-		c. create user 'Kyle'@'%' identified by '123123'; #可以在所有机器登录
+		a. create user 'Kyle'@'192.168.1.1' identified by '123123';  --kyle可以在192.168.1.1这机器上登录
+		b. create user 'Kyle'@'192.168.1.%' identified by '123123'; --可以在192.168.1.x这些机器上登录
+		c. create user 'Kyle'@'%' identified by '123123'; --可以在所有机器登录
 	3. 授权：
 		a. grant select,insert,update on db1.t1 to 'kyle'@'%'
 		b. grant all privileges on db1.t1 to 'kyle'@'%'
@@ -31,21 +33,18 @@
 	4. 刷新权限
 		a. FLUSH PRIVILEGES
 		
-
-
-
 MYSQL的语法规范
 	1. 不区分大小写，但建议关键字大写，表、列名小写
 	2. 以分号结尾。
 	3. 每条命令根据需要，可以进行缩进或换行。
 	4. 注释
-		a. 单行注释：#注释文字
+		a. 单行注释：--注释文字
 		b. 单行注释：-- 注释文字
 		c. 多行注释：/* 注释文字。。。。*/
 	
 
 
-学习SQL语句规则
+SQL语句实际操作
 	1. 操作文件夹（数据库）
 		a. 数据库常用命令
 			a. create databases db2;
@@ -67,26 +66,19 @@ MYSQL的语法规范
 			a. 显示表：
 				1) show tables;
 				2) desc tables
-				3) Show create table xx;
+				3) show create table xx;
 				
-			b. 表的创建
+			b. 表的创建（重点看约束类型一节，创建表的方式）
 				1) create table t1(id int, name char(10)) default charset = utf8
 				2) create table t1(id int, name char(10)) engine=innodb default charset = utf8
 				3) create table t1(
-					列名 类型 null, #可为空，默认可为空
-					列名 类型 not null, #不可为空
-					列名 类型 not null auto_increment primary key, #自增必须加主键
+					列名 类型 null, --可为空，默认可为空
+					列名 类型 not null, --不可为空
+					列名 类型 not null auto_increment primary key, --自增必须加主键
 					id int, 
 					name char(10),
-					public timestamp #日期格式
+					public timestamp --日期格式
 				) engine=innodb default charset = utf8
-				4) 举例
-				create table if not exists t1(     #可以加if not exists判断下
-					id int(10),
-					cnd_name varchar(20)
-					cnd_company varacher(50)
-					cnd_depart varchar(20)
-					package int(10),
 				
 			c. 表的修改
 				1) 语法：alter table 表明 add | drop| modify |change column
@@ -116,8 +108,8 @@ MYSQL的语法规范
 				1) drop table t1;
 			h. 显示和更新表的内容
 				1) desc t1;
-				2) show create table t1;  #显示表如何创建
-				3) show create table t1 \G; #显示表如何创建
+				2) show create table t1;  --显示表如何创建
+				3) show create table t1 \G; --显示表如何创建
 				4) alter table t1 AUTO_INCREMENT = 1; 删除某行后，执行此条，再执行插入语句，就可以正常自增。
 				5) alter table user add foreign key(pid) references province(pId);
 				
@@ -148,29 +140,35 @@ MYSQL的语法规范
 
 		
 		c. 约束类型
-			i. auto_increment: 自增
-			ii. primary key: 约束（不能重复且不能为空）；加速查找
-			iii. 外键(P10)
-				1) 外键必须为唯一
-				2) create table cnd(
-				id int auto_increment primary key,
-				industry char(32),
-				depart char(32),
-				cnd_name char(32),
-				companty char(32),
-				title char(32),
-				CONSTRAINT fk_guanxi_teach FOREIGN KEY  (t_id) REFERENCES teacher(id),
-				CONSTRAINT fk_guanxi_class FOREIGN KEY (class_id) REFERENCES	class(id)
+			—— auto_increment: 自增
+			—— check：保证事务取值在合法范围内。
+			—— default: 默认值
+			—— unique:唯一约束；能允许一个空值，不能插入第二个空值；
+			—— not null: 非空约束
+			—— 主键：primary key 约束（不能重复且不能为空）；加速查找
+			—— 外键：外键必须为唯一，类型与引用外键的字段一致。
+			    ——示例：
+				create table cnd(
+					id int auto_increment primary key,
+					salary int check (salary>=1000 and salary<=8000), --check约束保证数据取值在合法范围内。
+					gender char(1) default('男'), --默认值约束
+					industry char(32) not null, --非空约束
+					depart char(32) unique not null, -- 非空和unique可以联合使用
+					cnd_name char(32) unique, --唯一约束。
+					companty char(32),
+					title char(32),
+					CONSTRAINT fk_guanxi_teach FOREIGN KEY  (t_id) REFERENCES teacher(id),
+					CONSTRAINT fk_guanxi_class FOREIGN KEY (class_id) REFERENCES class(id)
 				) engine = innodb default charset=utf8;
 				
-				3) 给已经建好的表格，后期加外键
-					ALTER TABLE STORE_FRONTINFO
-					  ADD CONSTRAINT FK_STORE_FR_REFERENCE_STORE_AR FOREIGN KEY (AREAID)
-					  REFERENCES STORE_AREA (AREAID);
-					
+				——给已经建好的表格，后期加外键
+				ALTER TABLE STORE_FRONTINFO
+					ADD CONSTRAINT FK_STORE_FR_REFERENCE_STORE_AR FOREIGN KEY (AREAID)
+					REFERENCES STORE_AREA (AREAID);
+				
 		d. MySQL中有两种引擎
-			i. innodb：支持事务，出错时自动回滚
-			ii. myisam：不支持事务。
+			—— innodb：支持事务，出错时自动回滚
+			—— myisam：不支持事务。
 	
 		
 			
@@ -189,10 +187,10 @@ MYSQL的语法规范
 			
 		d. 查：
 			i. 条件查询（where）
-				1) 语法：select xx,xx, xx  from where xx='xxx'; # 条件查询
+				1) 语法：select xx,xx, xx  from where xx='xxx'; -- 条件查询
 				2) 条件运算符：< > <> >= <=
 					a) select xx,xx from t1 where salary>12000; >大于
-					b) select xx,xx from t1 where id <> 90; #<>不等于
+					b) select xx,xx from t1 where id <> 90; --<>不等于
 					
 				3) 逻辑运算符：and\ or\ not
 					a) select xx,xx from t1 where salary>=12000 and salary<=20000;
@@ -202,21 +200,21 @@ MYSQL的语法规范
 						ii) _代表任意1个字符
 						iii) escape '$'; 采用escape "任一字符" 作为转义符。
 					b) like:
-						i) 查询员工名中包含a的：select * from t1 where last_name like '%a%'; #%代表任意多个字符
-						ii) 查询第三个字符为e,第五个字符为a的：select * from t1 where last_name like '__e_a%'; #_代表任意1个字符
-						iii) 查询第二字符为_的员工：select xx from t1 where last_name like '_$_%' escape '$'; #采用escape "任一字符" 作为转义符。
+						i) 查询员工名中包含a的：select * from t1 where last_name like '%a%'; --%代表任意多个字符
+						ii) 查询第三个字符为e,第五个字符为a的：select * from t1 where last_name like '__e_a%'; --_代表任意1个字符
+						iii) 查询第二字符为_的员工：select xx from t1 where last_name like '_$_%' escape '$'; --采用escape "任一字符" 作为转义符。
 					c) between and:
-						i) select xx from t1 where employee_id between 100 and 120; #等于employee_id>=100 and employee <=120;
+						i) select xx from t1 where employee_id between 100 and 120; --等于employee_id>=100 and employee <=120;
 					d) in:
 						i) select xx from t1 where job_id in ('xx', 'xx','xx')；xx表示不同值或连接，等于job_id='xx' or job_id='xx' or job_id='xx'
 						ii) select xx,xx from t1 where id in (select id from tb11)
 					e) is null:
-						i) select xx from t1 where xx is null; #xx=null，<>无法判断null值
+						i) select xx from t1 where xx is null; --xx=null，<>无法判断null值
 			ii. 分页查询（limit)
-				1) select * from tb1 limit 10; #取前10条
-				2) select * from tb1 limit 10，10; #从第10个开始，取10条
-				3) select * from tb1 limit 20，10; #从第20个开始，取10条
-				4) select * from tb1 limit 10 offset 20; #从20开始，取10条
+				1) select * from tb1 limit 10; --取前10条
+				2) select * from tb1 limit 10，10; --从第10个开始，取10条
+				3) select * from tb1 limit 20，10; --从第20个开始，取10条
+				4) select * from tb1 limit 10 offset 20; --从20开始，取10条
 				
 			iii. 排序查询(order by)
 				1) 语法：select xx from t1 [where xx='xxx'] order by 字段名 [asc | desc]；
@@ -230,12 +228,12 @@ MYSQL的语法规范
 				1) 语法：
 				select xx, group_function(xx) 
 				from table 
-				[where ..] #注意where一定放在from table后面
-				group by 分组的列表 #支持多个字段分组，表达式支持函数
+				[where ..] --注意where一定放在from table后面
+				group by 分组的列表 --支持多个字段分组，表达式支持函数
 				[order by ..]; 
 				
 				2) 案例1：查询每个工种的最高工资
-				select max(salary),job_id #按照job_id分组
+				select max(salary),job_id --按照job_id分组
 				from t1
 				group by job_id;
 				3) 案例2：查询每个地点的部门个数
@@ -298,17 +296,17 @@ MYSQL的语法规范
 					a) left join: 
 					select xx,xx from 
 					t1 
-					left join t2 on t1.id=t2.id #left join表示 以join左边（t1)表为准，全部显示
+					left join t2 on t1.id=t2.id --left join表示 以join左边（t1)表为准，全部显示
 					
 					
 					b) right join:
 					select xx,xx from
 					 t1 
-					right join t2 on t1.id=t2.id；#right join表示以join左右的表(t2)表为准，全部显示
+					right join t2 on t1.id=t2.id；--right join表示以join左右的表(t2)表为准，全部显示
 					
 					c) inner join:
 					select xx,xx from
-					t1 inner join t2 on t1.id=t2.id # inner join里面有空值的行就隐藏。
+					t1 inner join t2 on t1.id=t2.id -- inner join里面有空值的行就隐藏。
 					
 					d) 多表连接
 					select xx,xxx,xx from 
@@ -323,17 +321,17 @@ MYSQL的语法规范
 				3) show tables;
 				4) select * from 表名：
 				5) select xx, xx, xx from 表名;
-				6) select database(); #查看自己在哪个数据库位置
-				7) desc 表名；#查看表的属性
-				8) select version(); 或mysql --version #查看版本
-				9) `string` #加了`内容`后表示，就是字段，用来区分保留字。
+				6) select database(); --查看自己在哪个数据库位置
+				7) desc 表名；--查看表的属性
+				8) select version(); 或mysql --version --查看版本
+				9) `string` --加了`内容`后表示，就是字段，用来区分保留字。
 				10) 查询常量、表达式
-					a) select 100; #类似于print 100;
-					b) select 'hello word'; #类似于print(hello world);
-					c) select 100*98; #类似于print(100*98)
+					a) select 100; --类似于print 100;
+					b) select 'hello word'; --类似于print(hello world);
+					c) select 100*98; --类似于print(100*98)
 				11) 查询函数：
-					a) select version(); #调用函数
-					b) select ifnull(字段,结果） #如果“字段”为0，则显示“结果”
+					a) select version(); --调用函数
+					b) select ifnull(字段,结果） --如果“字段”为0，则显示“结果”
 				12) 起别名（as或空）；
 					a) select 100*98 as 结果；
 					b) select xx as "number", xx as "my_name" from t1;
@@ -341,10 +339,10 @@ MYSQL的语法规范
 				13) 去重（distinct)：
 					a) select distinct xx from t1;
 				14) +号的作用：只有一个功能，为运算符
-					a) select 100+90; #结果190
-					b) select '123'+90; #结果213；
-					c) select 'hello' + 90; #结果90,字符 转换失败则变为0
-					d) seelct null + 90; #结果null, 只要一方为null 结果肯定为null
+					a) select 100+90; --结果190
+					b) select '123'+90; --结果213；
+					c) select 'hello' + 90; --结果90,字符 转换失败则变为0
+					d) seelct null + 90; --结果null, 只要一方为null 结果肯定为null
 				15) 字段拼接（concat)
 					a) 案例：查询员工姓和名连成一个字段，并显示为姓名
 					select concat(last_name,first_name) as 姓名 from t1;
@@ -354,11 +352,11 @@ MYSQL的语法规范
 		b. 单行函数
 			i. 字符函数：
 				1) length获取字节长度:select length('xxxx'); 
-				2) concat 拼接字符串: select concat('xx','_','xxx') as xx from t1; #用下划线连接
+				2) concat 拼接字符串: select concat('xx','_','xxx') as xx from t1; --用下划线连接
 				3) upper\ lower: 大写、小写：select concat(upper(xx),lower(xx)) as xx from t1;
 				4) substr、substring：截取字符，索引从1开始数。
 					a) 返回"efg": select substr('abcdefg', 5) out_put; 
-					b) 返回"bcd": select substr('abcdefg', 2,3) out_put; #注意3是长度不是位置
+					b) 返回"bcd": select substr('abcdefg', 2,3) out_put; --注意3是长度不是位置
 				5) instr：返回字串的起始位置，如果找不到返回0
 					a) 返回3：select instr('abcdefg','cde') as out_put；
 				6) trim: 去前后字符串，类似strip()
@@ -372,12 +370,12 @@ MYSQL的语法规范
 					a) 返回今天是个好天气：select replace("今天是个好日子”,"好日子“，”好天气“）
 			ii. 数学函数：
 				1) round: 四舍五入
-					a) select round(1.65); #返回1.6
+					a) select round(1.65); --返回1.6
 					b) select round(1.567, 2); 返回1.57（2表示保留两位小数）
 				2) ceil：向上取整
-					a) select ceil(1.52); #返回2
+					a) select ceil(1.52); --返回2
 				3) floor: 向下取整
-					a) select floor(1.52); #返回1
+					a) select floor(1.52); --返回1
 				4) truncate ：截取数字
 					a) select truncate(1.5999999,2); 返回1.59（2表示保留2位小数）
 				5) mod：取余
@@ -390,30 +388,30 @@ MYSQL的语法规范
 				3) curtime: 返回当前时间，不包含日期
 					a) select curtime();
 				4) 获取指定部分：如年、月、日、小时、分钟、秒 
-					a) select year(now()); #返回当前系统时间的年：2021
-					b) select year('1998-1-1')；#返回：1998
-					c) select month(now()); #返回当前系统时间月：5
-					d) select MONTHNAME(now()); #返回当前系统时间月：May
+					a) select year(now()); --返回当前系统时间的年：2021
+					b) select year('1998-1-1')；--返回：1998
+					c) select month(now()); --返回当前系统时间月：5
+					d) select MONTHNAME(now()); --返回当前系统时间月：May
 					e) hour
 					f) minute
 					g) second
 				
 				5) str_to_date：将指定字符串转为日期。
-					a) select STR_TO_DATE("3-2-1998","%m-%d-%Y"); #返回1998-03-02
+					a) select STR_TO_DATE("3-2-1998","%m-%d-%Y"); --返回1998-03-02
 				6) date_format: 将日期转变为字符串
-					a) select date_format(now(),'%Y年%m月%d日'); #返回2021年05月15日；
+					a) select date_format(now(),'%Y年%m月%d日'); --返回2021年05月15日；
 				7) datediff(日期1，日期2）：日期1减日期2返回相差多少天。
-					a) select DATEDIFF(now(),'1988-3-5') 天数; #返回相差的天数
+					a) select DATEDIFF(now(),'1988-3-5') 天数; --返回相差的天数
 				8) 日期格式符对照表：
 					
 			iv. 其他函数
-				1) select version(); #当前版本
-				2) select database(); #当前数据库
-				3) select user(); #当前用户
+				1) select version(); --当前版本
+				2) select database(); --当前数据库
+				3) select user(); --当前用户
 			v. 流程控制函数：
 				1) If函数：
-					a) select if( 10<5, '大','小'); #返回小
-					b) select if( 10>5, "大",'小'); #返回大
+					a) select if( 10<5, '大','小'); --返回小
+					b) select if( 10>5, "大",'小'); --返回大
 				2) case函数：
 					a) 方法一（类似于多重if):
 					案例：查询员工工资，要求
@@ -453,13 +451,13 @@ MYSQL的语法规范
 					b) select avg(salary) from t1;
 					c) select min(salary) from t1;
 					d) select max(salary) from t1;
-					e) select count(salary) from t1; #计算非空值的个数
+					e) select count(salary) from t1; --计算非空值的个数
 					f) select sum(salary),avg(salary),min(salary) from t1;
 				2) 特点:
 					a) sum、avg处理数值；max、min、count处理任何类型
 					b) 都忽略null值计算
 					c) 都支持和distinct搭配去重
-						i) select sum(distinct salaty) from t1; #去掉重复的工资后计算总额。
+						i) select sum(distinct salaty) from t1; --去掉重复的工资后计算总额。
 					d) count函数详细介绍：
 						i) select count(*) from t1; 用于统计行数-->这种格式用得多
 						ii) select count(1) from t1; 也是用于统计行数
